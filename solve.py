@@ -3,56 +3,23 @@ import sys
 import os
 import json
 from typing import List, Dict, Any
+from Constraints import Constraints
+from PuzzleSolver import PuzzleSolver as Solver
 
 def print_usage() -> None:
+    """
+    Prints usage information on how to run this program.
+    """
+
+    # TODO
     print("usage")
 
-def validate_json(json_object: Dict[str, Any]) -> List[str]:
-    errors = []
-    
-    def key_exists(key: str) -> bool:
-        if key not in json_object:
-            errors.append("The property '{}' is not specified.".format(key))
-            return False
-        return True
-    
-    for prop in ["width", "height"]:
-        if not key_exists(prop) and type(json_object[prop]) != int:
-            errors.append("The property '{}' should be an integer but has the type '{}'.".format(
-                prop, type(json_object[prop])
-            ))
-
-    if errors:
-        return errors
-
-    for prop in ["rows", "columns"]:
-        if not key_exists(prop) and type(json_object[prop]) != list:
-            errors.append("The property '{}' should be an array but has the type '{}'.".format(
-                prop, type(json_object[prop])
-            ))
-            continue
-
-        for index, array in enumerate(json_object[prop]):
-            if type(array) != list:
-                errors.append("The object at index {} of the property '{}' should be an array but actually is of type '{}'".format(
-                    index, prop, type(array)
-                ))
-                continue
-
-            for number_index, number in enumerate(array):
-                if type(number) != int:
-                    errors.append("The number at index {} of the array at index {} of the property '{}' should be an integer but actually has the type '{}'".format(
-                        number_index, index, prop, type(number)
-                    ))
-
-    if len(json_object["rows"]) != json_object["height"]:
-        errors.append("The number of rows must match the height.")
-    if len(json_object["columns"]) != json_object["width"]:
-        errors.append("The number of columns must match the width.")
-
-    return errors
-
 def process_puzzle(path: str) -> None:
+    """
+    Processes one puzzle.
+    The necessary steps are: Check the file, validate the contents, run the solver and 
+    print the solutions, if any are found.
+    """
     if not os.path.isfile(path):
         print("{} is not a regular file.".format(path))
         return
@@ -72,15 +39,16 @@ def process_puzzle(path: str) -> None:
     else:
         f.close()
 
-    errors = validate_json(json_object)
-    if len(errors) > 0:
+    errors, instance = Constraints.validate_json(json_object)
+    if errors:
         print("The configuration file is not valid.", file=sys.stderr)
         print("Errors:", file=sys.stderr)
-        print("\t", end="")
+        print("\t", end="", file=sys.stderr)
         print("\n\t".join(errors), file=sys.stderr)
         return
 
-    # TODO run solver with validated data
+    solver = Solver(instance)
+    solutions = solver.solve()
     
 def main() -> None:
     if len(sys.argv) < 2 or \
