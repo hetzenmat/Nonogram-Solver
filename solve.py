@@ -38,6 +38,7 @@ def validate_json(json_object: Dict[str, Any]) -> List[str]:
                     index, prop, type(array)
                 ))
                 continue
+
             for number_index, number in enumerate(array):
                 if type(number) != int:
                     errors.append("The number at index {} of the array at index {} of the property '{}' should be an integer but actually has the type '{}'".format(
@@ -53,20 +54,20 @@ def validate_json(json_object: Dict[str, Any]) -> List[str]:
 
 def process_puzzle(path: str) -> None:
     if not os.path.isfile(path):
-            print("{} is not a regular file.".format(path))
-            return
+        print("{} is not a regular file.".format(path))
+        return
 
     try:
         f = open(path)
         json_object = json.load(f)
     except OSError as error:
         print("An error occurred while opening the file {}".format(path),
-                file=sys.stderr)
+              file=sys.stderr)
         print(error.strerror, file=sys.stderr)
         return
     except json.JSONDecodeError as error:
         print("An error occurred while parsing the JSON file {}".format(path),
-                file=sys.stderr)
+              file=sys.stderr)
         return
     else:
         f.close()
@@ -81,7 +82,6 @@ def process_puzzle(path: str) -> None:
 
     # TODO run solver with validated data
     
-
 def main() -> None:
     if len(sys.argv) < 2 or \
        any(help_command in sys.argv for help_command in ["--help", "-h", "-?"]):
