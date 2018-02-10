@@ -29,9 +29,12 @@ class PuzzleState:
 
     def __str__(self) -> str:
         return "\n".join(
-            [ ''.join(
-                    [ "█" if self._state[i][j] else " " for j in range(self.constraints.width) ]
-                ) for i in range(self.constraints.height)]
+            [ "┌" + "".join('─' for _ in range(self.constraints.width)) + "┐" ] + \
+            [ "│" + "".join(
+                        "█" if self._state[i][j] else " " for j in range(self.constraints.width) 
+                    ) + "│"
+                    for i in range(self.constraints.height) ] + \
+            [ "└" + "".join('─' for _ in range(self.constraints.width)) + "┘"]
         )
         
     def validate(self, completed_rows: int) -> bool:

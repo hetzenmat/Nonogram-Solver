@@ -5,6 +5,7 @@ import json
 from typing import List, Dict, Any
 from Constraints import Constraints
 from PuzzleSolver import PuzzleSolver as Solver
+from PuzzleState import PuzzleState as State
 
 def print_usage() -> None:
     """
@@ -47,11 +48,16 @@ def process_puzzle(path: str) -> None:
         print("\n\t".join(errors), file=sys.stderr)
         return
 
-    solver = Solver(instance)
-    solutions = solver.solve()
-    print("solutions")
-    for s in solutions:
-        print(s)
+    solver: Solver = Solver(instance)
+    solutions: List[State] = solver.solve()
+    
+    first = True
+    for index, solution in enumerate(solutions):
+        if not first:
+            print()
+        first = False
+        print("Solution {}/{}".format(index + 1, len(solutions)))
+        print(solution)
     
 def main() -> None:
     if len(sys.argv) < 2 or \
