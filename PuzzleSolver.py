@@ -14,8 +14,8 @@ class PuzzleSolver:
         self.nodes += 1
         if row > self.max_row:
             self.max_row = row
-            print("Row: {}, expanded nodes: {}, nodes/s: {:.2f}".format(
-                self.max_row, self.nodes, self.nodes / (time.time() - self.start_time)
+            print("Row: {}, nodes: {}, nodes/s: {:.2f}".format(
+                self.max_row, self.nodes, self.nodes / (time.perf_counter() - self.start_time)
             ))
 
         if not self.state.validate(row):
@@ -37,7 +37,7 @@ class PuzzleSolver:
         
         self.nodes = -1
         self.max_row = 0
-        self.start_time = time.time()
+        self.start_time = time.perf_counter()
         self._depth_first_search(-1)
 
         return self.solutions
