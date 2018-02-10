@@ -1,5 +1,5 @@
 from Constraints import Constraints
-from typing import Union
+from typing import Union, List
 
 class PuzzleState:
     EMPTY = False
@@ -19,11 +19,27 @@ class PuzzleState:
         assert self._check_limits(row, column)
         self._state[row][column] = value
 
+    def set_row(self, row: int, values: List[bool]) -> None:
+        assert len(values) == self.constraints.width
+        self._state[row] = values
+
     def get(self, row: int, column: int) -> Union[bool, None]:
         assert self._check_limits(row, column)
         return self._state[row][column]
 
+    def __str__(self) -> str:
+        return "\n".join(
+            [ ''.join(
+                    [ "█" if self._state[i][j] else " " for j in range(self.constraints.width) ]
+                ) for i in range(self.constraints.height)]
+        )
+        
     def validate(self, completed_rows: int) -> bool:
+        if completed_rows <= 0:
+            return True
+
+        completed_rows += 1
+        
         for i in range(self.constraints.width):
             column_constraints = self.constraints.columns[i]
 
@@ -67,6 +83,7 @@ class PuzzleState:
             remaining_cells = self.constraints.height - completed_rows
             remaining_constraints = column_constraints[block_index:]
             if sum(remaining_constraints) + len(remaining_constraints) - 1 > remaining_cells:
+                
                 return False
 
         return True # no errors were found so the state is valid

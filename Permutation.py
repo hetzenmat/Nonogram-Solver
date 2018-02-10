@@ -1,68 +1,49 @@
-from typing import List
+from typing import List, Dict
 from PuzzleState import PuzzleState as State
-
+from Constraints import Constraints    
+    
 class Permutation:
-    def __init__(self, blocks: List[int], size: int) -> None:
-        self.blocks = blocks
-        self.size = size
-        self.single = (len(blocks) == 0)
-        self.stop = False
+    def __init__(self, constraints: Constraints) -> None:
+        self.constraints = constraints
+        self.cache: Dict[int, List[List[bool]]] = dict()
 
-        # initial state
+    def get_permutations(self, row: int) -> List[bool]:
+        if row in self.cache:
+            return self.cache[row]
+
+        blocks: List[int] = self.constraints.rows[row]
+        if not blocks:
+            return [[State.EMPTY for _ in range(self.constraints.width)]]
+
         positions = [0]
-        for block_length in blocks[1:]:
-            positions.append(positions[-1] + block_length + 1)
-        self.stack = [(len(blocks) - 1, positions)]
-        self.stack_index = 0
+        for block in range(1, len(blocks)):
+            positions.append(positions[-1] + blocks[block - 1] + 1)
+        self.cache[row] = []
+        self._next_permutation(row, positions, len(positions) - 1)
+        return self.cache[row]
 
-    def _positions_copy(self, positions: List[int]) -> List[int]:
-        return [i for i in positions]
+    def _positions_to_row(self, row: int, positions: List[int]) -> List[bool]:
+        blocks = [State.EMPTY for _ in range(self.constraints.width)]
+        for index, pos in enumerate(positions):
+            length = self.constraints.rows[row][index]
+            blocks[pos:pos+length] = [State.BLOCK for _ in range(length)]
+        
+        return blocks
 
-    def _to_cells(self, positions: List[int]) -> List[bool]:
-        r = [State.EMPTY for _ in range(self.size)]
-        for block_index, position in enumerate(positions):
-            for i in range(position, self.blocks[block_index]):
-                r[i] = State.BLOCK
-        return r
-
-    def _can_shift(self, block_index: int, positions: List[int]) -> bool:
+    def _can_shift(self, row: int, positions: List[int], block_index: int) -> bool:
         if block_index + 1 == len(positions):
-            # there must be one or more free cells next to the last block
-            return positions[block_index] + self.blocks[block_index] < self.size
+            return positions[block_index] + self.constraints.rows[row][block_index] < self.constraints.width
+        
+        return positions[block_index] + self.constraints.rows[row][block_index] + 1 < positions[block_index + 1]
 
-        # there must be more than one free cell next to the block
-        return positions[block_index] + self.blocks[block_index] + 1 < positions[block_index + 1]
-
-    def _next_permutation(self):
-        if len(self.stack) == 0:
-            self.stop = True
-            return
-
-        block_index, positions = self.stack[0]
+    def _next_permutation(self, row: int, positions: List[int], block_index: int) -> None:
+        self.cache[row].append(self._positions_to_row(row, positions))
         if block_index < 0:
-            self.stack.pop(0)
             return
 
-        if not self._can_shift(block_index, positions):
-            self.stack = self.stack[1:]
-            self.stack_index -= 1
-            self._next_permutation()
-            return
+        while self._can_shift(row, positions, block_index):
+            positions[block_index] += 1
+            self._next_permutation(row, [p for p in positions], block_index - 1)
+        
 
-        positions[block_index] += 1
-        self.stack.append((block_index - 1, self._positions_copy(positions)))
-
-    def __iter__(self) -> "Permutation":
-        return self
-
-    def __next__(self) -> List[int]:
-        if self.stop:
-            raise StopIteration
-        if self.single:
-            self.stop = True
-            return [State.EMPTY for _ in range(self.size)]
-
-        return_value = self._to_cells(self.stack[self.stack_index][1])
-        self.stack_index += 1
-        self._next_permutation()
-        return return_value
+        

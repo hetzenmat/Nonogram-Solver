@@ -49,6 +49,9 @@ def process_puzzle(path: str) -> None:
 
     solver = Solver(instance)
     solutions = solver.solve()
+    print("solutions")
+    for s in solutions:
+        print(s)
     
 def main() -> None:
     if len(sys.argv) < 2 or \

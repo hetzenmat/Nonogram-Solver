@@ -2,7 +2,7 @@ from typing import List, Dict, Tuple, Any, Type
 
 class Constraints:
 
-    def __init__(self, width, height, rows, columns):
+    def __init__(self, width: int, height: int, rows: List[List[int]], columns: List[List[int]]) -> None:
         self.width = width
         self.height = height
         self.rows = rows
